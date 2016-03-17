@@ -1,2 +1,7 @@
 ---
 # handlers file for vitalied.mongodb
+
+- name: restart mongodb
+  service:
+    name: mongod
+    state: restarted
