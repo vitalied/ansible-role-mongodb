@@ -1,2 +1,15 @@
 ---
 # defaults file for vitalied.mongodb
+
+mongodb_apt_key_server: hkp://keyserver.ubuntu.com:80
+mongodb_apt_key_id: EA312927
+mongodb_add_apt_repo: deb http://repo.mongodb.org/apt/ubuntu {{ ansible_distribution_release }}/mongodb-org/3.3 multiverse
+
+mongodb_base_dir: /srv
+mongodb_data_dir: /srv/mongodb
+mongodb_old_data_dir: /var/lib/mongodb
+
+mongodb_journal_enabled: 'true'
+
+mongodb_bind_ip: 127.0.0.1
+mongodb_port: 27017
