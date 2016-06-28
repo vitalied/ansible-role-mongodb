@@ -1,2 +1,56 @@
 ---
 # tasks file for vitalied.mongodb
+
+- name: apt-key add
+  apt_key:
+    keyserver: "{{ mongodb_apt_key_server }}"
+    id: "{{ mongodb_apt_key_id }}"
+    state: present
+  tags: vitalied.mongodb
+
+- name: apt-add-repository
+  apt_repository:
+    filename: mongodb-org
+    repo: "{{ mongodb_add_apt_repo }}"
+    state: present
+  tags: vitalied.mongodb
+
+- name: apt-get install
+  apt:
+    name: mongodb-org
+    state: latest
+  notify: restart mongodb
+  tags: vitalied.mongodb
+
+- name: check if new DB directory is empty
+  stat:
+    path: "{{ mongodb_data_dir }}/mongod.lock"
+  register: mongodb_data_moved
+  tags: vitalied.mongodb
+
+- block:
+  - name: stop mongodb
+    service:
+      name: mongod
+      state: stopped
+    register: mongodb_stopped
+
+  - name: move DB data to new directory
+    command: mv {{ mongodb_old_data_dir }} {{ mongodb_base_dir }}
+
+  when: not mongodb_data_moved.stat.exists and mongodb_data_dir != mongodb_old_data_dir
+  tags: vitalied.mongodb
+
+- name: copy templates
+  template:
+    src: etc/mongod.conf.j2
+    dest: /etc/mongod.conf
+  notify: restart mongodb
+  tags: vitalied.mongodb
+
+- name: start mongodb
+  service:
+    name: mongod
+    state: started
+  when: mongodb_stopped.changed
+  tags: vitalied.mongodb
